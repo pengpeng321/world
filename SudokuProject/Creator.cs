@@ -16,38 +16,45 @@ namespace Sudoku
         private const int Y2 = 3;
         private const int Y3 = 6;
 
-        private const int FAST_MAX = 645100;            //使用行行变换，列列变换所能达到的最大不同个数的数独
-        private byte[,] a = new byte[9, 9];             //二维数组，用来存放整个数独的每一个数
+        //单元测试使用变量，运行单元测试需要将函数改为public
+        public int test;
+        public bool answer = true;
+
+        private const int FAST_MAX = 1;//645100;            //使用行行变换，列列变换所能达到的最大不同个数的数独
+        private char[,] a = new char[9, 9];             //二维数组，用来存放整个数独的每一个数
         private byte[,] flag_hang = new byte[9, 10];    //记录每行（共9行）的1-9的出现情况
         private byte[,] flag_lie = new byte[9, 10];     //记录每列（共9列）的1-9的出现情况
         private byte[,] flag_jiu = new byte[9, 10];     //记录每个九宫格（共9个）的1-9的出现情况
         private int over;                               //总共输出几次
         private int count;                              //输出结果的次数
+        private int ii, jj;
         private Random re = new Random();
-        private List<byte> mylist = new List<byte>();
-        private static string path = "..\\sudoku.txt";
+        private List<char> mylist = new List<char>();
+        private static string path = ".\\sudoku.txt";
         StreamWriter ws = new StreamWriter(path);
+
         public Creator(int temp)                        //构造函数，初始化
         {
             over = temp;
             count = 0;
-            a[0, 0] = 3;
+            a[0, 0] = '4';
             Begin();
         }
-        public void Begin()                             //开始寻找数独
+        private void Begin()                             //开始寻找数独
         {
             //分两种方法寻找数独
-            //行行变换，列列变换寻找  优点：快，                    缺点：只能生成FAST_MAX = 645100个不同的数组
-            //通过回溯寻找，          优点：可以生成很多很多的数独，缺点：慢
+            //行列变换寻找        优点：快，                     缺点：只能生成FAST_MAX = 645100个不同的数组
+            //通过回溯寻找        优点：可以生成很多很多的数独   缺点：慢
 
+            char[] cc = { '1', '2', '3', '4', '5' ,'6','7','8','9'};
             for (int i = 1; i < 10; i++)                               
             {
                 //初始化mylist 
-                if (i == 3) continue;
-                mylist.Add((byte)i);
+                if (i == 4) continue;
+                mylist.Add(cc[i-1]);
             }
             FindFirst(2);                               //使用行行变换，列列变换寻找        
-            if (count < over)                           //当行行变换，列列变换寻找达不到要求时使用回溯
+            if (count < over)                           //当行列变换找到极限，还不能满足需求，使用回溯寻找                                                                                
             {
                 int temp, j, jj;
                 for (j = 0; j < 9; j++)
@@ -58,15 +65,15 @@ namespace Sudoku
                         temp = (j / 3) + (jj / 3) * 3;
                         if (j < 3 && jj < 3)
                         {
-                            flag_hang[jj, a[j, jj]] = 1;
-                            flag_lie[j, a[j, jj]] = 1;
-                            flag_jiu[temp, a[j, jj]] = 1;
+                            flag_hang[jj, Convert.ToInt16(a[j, jj])-48] = 1;
+                            flag_lie[j, Convert.ToInt16(a[j, jj])-48] = 1;
+                            flag_jiu[temp, Convert.ToInt16(a[j, jj])-48] = 1;
                         }
                         else
                         {
-                            flag_hang[jj, a[j, jj]] = 0;
-                            flag_lie[j, a[j, jj]] = 0;
-                            flag_jiu[temp, a[j, jj]] = 0;
+                            flag_hang[jj, Convert.ToInt16(a[j, jj])-48] = 0;
+                            flag_lie[j, Convert.ToInt16(a[j, jj])-48] = 0;
+                            flag_jiu[temp, Convert.ToInt16(a[j, jj])-48] = 0;
                         }
                     }
                 }
@@ -74,7 +81,7 @@ namespace Sudoku
             }
             ws.Close();
         }
-        public void FindFirst(int p)                    //寻找第一个小九宫格
+        private void FindFirst(int p)                    //寻找第一个小九宫格
         {
             int x, y, i, j, rand;
             if (count == over) return;
@@ -95,7 +102,7 @@ namespace Sudoku
                 mylist.Insert(i, a[x, y]);
             }
         }
-        public void FindAll()                           //找到剩下的8个九宫格
+        private void FindAll()                           //找到剩下的8个九宫格
         {
             //采用行行变换，列列变换
             int i,q,w,e,r;
@@ -148,6 +155,21 @@ namespace Sudoku
                                 a[X3 + 1, Y3 + i] = a[X3 + ((r == 0) ? 2 : 0), Y1 + i];         //9
                                 a[X3 + 2, Y3 + i] = a[X3 + ((r == 0) ? 0 : 1), Y1 + i];         //9
                             }
+                            {
+                                /*
+                                //单元测试代码，用来检测，数独每行每列的正确性，需要更改a[ii,jj]  a[jj,ii]
+                                for (ii = 0; ii < 9; ii++)
+                                {
+                                    for (jj = 0; jj < 9; jj++)
+                                    {
+                                        test += (int)a[ii, jj];
+                                        test -= 48;
+                                    }
+                                    if (test != 45) { answer = false; }
+                                }
+                                count++;
+                                */
+                            }   //单元测试代码,需要将下面第二行的write（）隐藏
                             if (count == over) return;
                             if (count < FAST_MAX) Write();  //理论上有645120个数独，为了使用回溯时避免重复，最后一组16个数独不用
                             if (count == over) return;
@@ -171,13 +193,26 @@ namespace Sudoku
             if (count == over)  return;
             if (p == 82)
             {
+                {/*
+                    //单元测试代码，用来检测，数独每行每列的正确性，需要更改a[ii,jj]  a[jj,ii]
+                    for (ii = 0; ii < 9; ii++)
+                    {
+                        test = 0;
+                        for (jj = 0; jj < 9; jj++)
+                        {
+                            test += (int)a[ii, jj];
+                            test-=48;
+                        }
+                        if (test != 45) { answer = false; }
+                    }*/
+                }  //单元测试代码 需要将下面的write（）隐藏
                 Write();
                 return;
             }
             x = (p - 1) % 9;
             y = (p - 1) / 9;
             rand = re.Next(1, 100);
-            for (j = 0; j < 10; j++)
+            for (j = 1; j < 10; j++)
             {
                 i = (rand + j) % 9 + 1;
                 if (flag_hang[y, i] == 1) continue;
@@ -186,7 +221,8 @@ namespace Sudoku
                 if (flag_jiu[temp, i] == 1) continue;
                 else
                 {
-                    a[x, y] = (byte)i;
+                    a[x, y] = (char)i;
+                    a[x, y] += '0';
                     flag_lie[x, i] = 1;
                     flag_hang[y, i] = 1;
                     flag_jiu[temp, i] = 1;
@@ -199,14 +235,14 @@ namespace Sudoku
         }
         private void Write()                            //写
         {
-            int i, j;
-            for (i = 0; i < 9; i++)
+            for (ii = 0; ii < 9; ii++)
             {
-                for (j = 0; j < 9; j++)
+                for (jj = 0; jj < 8; jj++)
                 {
-                    ws.Write(a[i, j]);
+                    ws.Write(a[ii, jj]);
                     ws.Write(' ');
                 }
+                ws.Write(a[ii, jj]);
                 ws.WriteLine();
             }
             ws.WriteLine();

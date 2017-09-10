@@ -11,7 +11,6 @@ namespace Sudoku
     {
         static void Main(string[] args)
         {
-            
             string c1 = args[0];                    //判断第一个参数是否有误
             if (c1 != "-c")
             {
