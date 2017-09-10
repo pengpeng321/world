@@ -20,7 +20,7 @@ namespace Sudoku
         public int test;
         public bool answer = true;
 
-        private const int FAST_MAX = 1;//645100;            //使用行行变换，列列变换所能达到的最大不同个数的数独
+        private const int FAST_MAX = 645100;            //使用行行变换，列列变换所能达到的最大不同个数的数独
         private char[,] a = new char[9, 9];             //二维数组，用来存放整个数独的每一个数
         private byte[,] flag_hang = new byte[9, 10];    //记录每行（共9行）的1-9的出现情况
         private byte[,] flag_lie = new byte[9, 10];     //记录每列（共9列）的1-9的出现情况
